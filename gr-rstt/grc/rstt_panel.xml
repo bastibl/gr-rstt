@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!--
+###################################################
+## RSTT Data Sink
+###################################################
+ -->
+<block>
+	<name>RSTT Panel</name>
+	<key>gr_rstt_panel</key>
+	<category>RSTT</category>
+	<import>import rstt</import>
+	<make>#set $parent = $notebook() and 'self.%s.GetPage(%s)'%$notebook() or 'self'
+rstt.rsttPanel($(parent).GetWin())
+#if not $grid_pos()
+$(parent).Add(self.$(id).panel)
+#else
+$(parent).GridAdd(self.$(id).panel, $(', '.join(map(str, $grid_pos()))))
+#end if</make>
+
+	<param>
+		<name>Grid Position</name>
+		<key>grid_pos</key>
+		<value></value>
+		<type>grid_pos</type>
+	</param>
+
+	<param>
+		<name>Notebook</name>
+		<key>notebook</key>
+		<value></value>
+		<type>notebook</type>
+	</param>
+
+	<sink>
+		<name>in</name>
+		<type>short</type>
+		<vlen>240</vlen>
+	</sink>
+</block>
