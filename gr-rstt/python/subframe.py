@@ -114,7 +114,7 @@ class SubframeConfig(Subframe):
     def __init__(self, sf_type, sf_bytes, sf_status, _dbg):
         Subframe.__init__(self, sf_type, sf_bytes, sf_status, _dbg)
         self.frame_num, self.id, self.d12, self.d13, self.d14, \
-                self.callibration_num, self.callibration_data = \
+                self.calibration_num, self.calibration_data = \
                 unpack('<H10sBBBB16s', parse_string(self.sf_bytes))
         self.battery_low = bool(self.d12 & 0x08)
         self.battery_killer_countdown = bool(self.d12 & 0x02)
@@ -180,6 +180,7 @@ class SubframeMeas(Subframe):
     def __init__(self, sf_type, sf_bytes, sf_status, _dbg):
         Subframe.__init__(self, sf_type, sf_bytes, sf_status, _dbg)
         self.ch1 = self.temp = conv_int(self.sf_bytes[0:3])
+        print self.sf_bytes[0:3]
         self.ch2 = self.hum_up = conv_int(self.sf_bytes[3:6])
         self.ch3 = self.hum_down = conv_int(self.sf_bytes[6:9])
         self.ch4 = conv_int(self.sf_bytes[9:12])

@@ -19,19 +19,13 @@ class Frame(dict):
         return self._broken
 
     def _parse(self, data, frame_prev):
-        print "input " + str(len(data))
         data = np.array(data[2*6:2*240])
-        print "array " + str(len(data))
         data, status = data[::2], data[1::2]
-        print "subset " + str(len(data))
 
-        print "data " + str(data[0:10])
-        print "status " + str(status[0:10])
         idx = 0
         self._sf_len = []
         self._broken = False
         while len(data):
-            print len(data)
             try:
                 subframe = Subframe.parse(data, status)
                 self[subframe.sf_type] = subframe

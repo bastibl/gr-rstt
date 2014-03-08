@@ -7,7 +7,8 @@ _int_max = (0x1400000-1)
 
 def conv_int(data):
     """Convert serialized fract24 integer into int value."""
-    data = ''.join(chr(x) for x in data)
+    data[2] = 0xff
+    data = ''.join(chr(x^0xff) for x in data)
     if len(data) == 3:
         data = data + b'\x00'
     val = unpack('<i', data)[0]

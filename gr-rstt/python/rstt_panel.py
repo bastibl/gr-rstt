@@ -2,6 +2,11 @@
 
 import wx
 import numpy as np
+import matplotlib
+matplotlib.use('WXAgg')
+from matplotlib.figure import Figure
+import matplotlib.cm as cm
+from matplotlib.backends.backend_wxagg import Toolbar, FigureCanvasWxAgg
 
 from gnuradio import gr, blocks
 
@@ -9,6 +14,10 @@ from calibration import CalibrationCollector, Calibration
 from frame import Frame
 from struct import unpack
 from subframe import SF_TYPE_CONFIG, SF_TYPE_MEASUREMENTS, SF_TYPE_GPS, SF_TYPE_PADDING, SF_TYPE_WTF1
+
+EVENT_CALIBRATED = 0
+EVENT_CONFIG     = 1
+EVENT_MEASSURE   = 2
 
 wxDATA_EVENT = wx.NewEventType()
 def EVT_DATA_EVENT(win, func):
@@ -40,7 +49,6 @@ class rsttPanel(gr.sync_block):
 
 	def work(self, input_items, output_items):
 		inp = input_items[0]
-		print "input: " + str(len(inp)) + "    " + str(len(inp[0]))
 
 		for i in range(len(inp)):
 			data = []
@@ -54,20 +62,40 @@ class rsttPanel(gr.sync_block):
 				continue
 			if not frame.is_broken():
 				self.frame_prev = frame
+
 			self.conf = frame.get(SF_TYPE_CONFIG)
 			if self.conf is not None:
 				frame_num = self.conf.frame_num
+				node_id   = self.conf.id
+				calibration_num = self.conf.calibration_num
+				de = DataEvent([EVENT_CONFIG, frame_num, node_id, calibration_num])
+				wx.PostEvent(self.panel, de)
+				del de
 			else:
 				frame_num = 'N/A'
+
+			self.meas = frame.get(SF_TYPE_MEASUREMENTS)
+			if self.meas is not None and self.conf is not None:
+				temp = self.meas.temp
+				hum  = self.meas.hum_down
+				pres = self.meas.pressure
+				de = DataEvent([EVENT_MEASSURE, self.conf.frame_num, temp, hum, pres])
+				wx.PostEvent(self.panel, de)
+				del de
+
 
 			#self._dump_frame(frame, frame_num)
 			#self._dump_eval(frame)
 			if not self.calibrated and self.conf is not None:
-				self.calibrated = self.calib.addFragment(self.conf.callibration_num, self.conf.callibration_data)
+				self.calibrated = self.calib.addFragment(self.conf.calibration_num, self.conf.calibration_data)
 				if self.calibrated:
 					print("calibration complete at frame %s" % frame_num)
 					calib_data = self.calib.data()
 					self.calib = Calibration(calib_data)
+
+					de = DataEvent([EVENT_CALIBRATED])
+					wx.PostEvent(self.panel, de)
+					del de
 
 
 
@@ -81,36 +109,22 @@ class rsttWxPanel(wx.Panel):
 	def __init__(self, *args, **kwds):
 		kwds["style"] = wx.TAB_TRAVERSAL
 		wx.Panel.__init__(self, *args, **kwds)
-		self.label_1 = wx.StaticText(self, -1, "Frequency")
-		self.label_2 = wx.StaticText(self, -1, "Station Name")
-		self.label_3 = wx.StaticText(self, -1, "Program Type")
-		self.label_4 = wx.StaticText(self, -1, "PI")
-		self.label_5 = wx.StaticText(self, -1, "Radio Text")
-		self.label_6 = wx.StaticText(self, -1, "Clock Time")
-		self.label_7 = wx.StaticText(self, -1, "Alt. Frequencies")
-		self.frequency = wx.StaticText(self, -1, "xxx.xx")
-		self.station_name = wx.StaticText(self, -1, "xxxxxxxx")
-		self.program_type = wx.StaticText(self, -1, "xxxxxxxxxxx")
-		self.program_information = wx.StaticText(self, -1, "xxxx")
-		self.tp_flag = wx.StaticText(self, -1, "TP")
-		self.ta_flag = wx.StaticText(self, -1, "TA")
-		self.musicspeech_flag = wx.StaticText(self, -1, "MUS/SPE")
-		self.monostereo_flag = wx.StaticText(self, -1, "MN/ST")
-		self.artificialhead_flag = wx.StaticText(self, -1, "AH")
-		self.compressed_flag = wx.StaticText(self, -1, "CMP")
-		self.staticpty_flag = wx.StaticText(self, -1, "stPTY")
-		self.radiotext = wx.StaticText(self, -1, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-		self.clocktime = wx.StaticText(self, -1, "xxxxxxxxxxxxxxxxxxxxx")
-		self.alt_freq = wx.StaticText(self, -1, "xxxxxxxxxxxxxxx")
+		self.label_1 = wx.StaticText(self, -1, "State")
+		self.label_2 = wx.StaticText(self, -1, "Frame Nr")
+		self.label_3 = wx.StaticText(self, -1, "Node ID")
+
+		self.calibrated = wx.StaticText(self, -1, "not calibrated")
+		self.frame_num = wx.StaticText(self, -1, "xxxxxxxx")
+		self.node_id = wx.StaticText(self, -1, "xxxxxxxxxxx")
+
+		self.fig = Figure((5,4), 75)
+		self.canvas = FigureCanvasWxAgg(self, -1, self.fig)
+		self.toolbar = Toolbar(self.canvas)
+		self.toolbar.Realize()
 
 		self.__set_properties()
 		self.__do_layout()
-		freq = "123"
-		if isinstance(freq, float) or isinstance(freq, int):
-			freq_str = "%.2f" % (float(freq) / 1e6)
-		else:
-			freq_str = str(freq)
-		self.frequency.SetLabel(freq_str)
+		self.__init_plot()
 		EVT_DATA_EVENT (self, self.display_data)
 
 	def __set_properties(self):
@@ -118,133 +132,68 @@ class rsttWxPanel(wx.Panel):
 		font_normal = wx.Font(16, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "")
 		font_small = wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, "")
 
-		self.frequency.SetFont(font_bold)
-		self.station_name.SetFont(font_bold)
-		self.program_type.SetFont(font_bold)
-		self.program_information.SetFont(font_bold)
-		self.tp_flag.SetFont(font_normal)
-		self.ta_flag.SetFont(font_normal)
-		self.musicspeech_flag.SetFont(font_normal)
-		self.monostereo_flag.SetFont(font_normal)
-		self.artificialhead_flag.SetFont(font_normal)
-		self.compressed_flag.SetFont(font_normal)
-		self.staticpty_flag.SetFont(font_normal)
-		self.radiotext.SetFont(font_small)
-		self.clocktime.SetFont(font_small)
-		self.alt_freq.SetFont(font_small)
+		self.calibrated.SetFont(font_bold)
+		self.calibrated.SetForegroundColour(wx.RED)
+		self.frame_num.SetFont(font_bold)
+		self.node_id.SetFont(font_bold)
 
 	def __do_layout(self):
 		sizer_0 = wx.BoxSizer(wx.VERTICAL)
 		sizer_1 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer_2 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer_4 = wx.BoxSizer(wx.HORIZONTAL)
 
 		flag = wx.ALIGN_CENTER_VERTICAL|wx.LEFT
 
 		# arguments: window, proportion, flag, border
 		sizer_1.Add(self.label_1, 0, flag)
-		sizer_1.Add(self.frequency, 0, flag, 20)
+		sizer_1.Add(self.calibrated, 0, flag, 20)
 		sizer_1.Add(self.label_2, 0, flag, 20)
-		sizer_1.Add(self.station_name, 0, flag, 20)
+		sizer_1.Add(self.frame_num, 0, flag, 20)
 		sizer_1.Add(self.label_3, 0, flag, 20)
-		sizer_1.Add(self.program_type, 0, flag, 20)
-		sizer_1.Add(self.label_4, 0, flag, 20)
-		sizer_1.Add(self.program_information, 0, flag, 20)
+		sizer_1.Add(self.node_id, 0, flag, 20)
 		sizer_0.Add(sizer_1, 1, wx.ALIGN_CENTER)
-
-		sizer_2.Add(self.tp_flag, 0, flag)
-		sizer_2.Add(self.ta_flag, 0, flag, 30)
-		sizer_2.Add(self.musicspeech_flag, 0, flag, 30)
-		sizer_2.Add(self.monostereo_flag, 0, flag, 30)
-		sizer_2.Add(self.artificialhead_flag, 0, flag, 30)
-		sizer_2.Add(self.compressed_flag, 0, flag, 30)
-		sizer_2.Add(self.staticpty_flag, 0, flag, 30)
-		sizer_0.Add(sizer_2, 1, wx.ALIGN_CENTER)
-
-		sizer_3.Add(self.label_6, 0, flag, 10)
-		self.clocktime.SetSizeHints(250, -1)
-		sizer_3.Add(self.clocktime, 0, flag, 10)
-		sizer_3.Add(self.label_7, 0, flag, 10)
-		self.alt_freq.SetSizeHints(200, -1)
-		sizer_3.Add(self.alt_freq, 0, flag, 10)
-		sizer_0.Add(sizer_3, 0, wx.ALIGN_CENTER)
-
-		sizer_4.Add(self.label_5, 0, flag)
-		sizer_4.Add(self.radiotext, 0, flag, 10)
-		sizer_0.Add(sizer_4, 0, wx.ALIGN_CENTER)
+		sizer_0.Add(self.canvas, 0, wx.ALIGN_CENTER | wx.GROW)
+		sizer_0.Add(self.toolbar, 0, wx.ALIGN_CENTER)
 
 		self.SetSizer(sizer_0)
 
+	def __init_plot(self):
+		self.a = self.fig.add_subplot(111)
+		self.a.set_title("Temperature")
+		self.x = []
+		self.temp = []
+		self.hum = []
+		self.pres = []
+		self.plot, = self.a.plot(self.x, self.temp, linewidth=2)
+
+	def GetToolBar(self):
+		return self.toolbar
+
 	def display_data(self, event):
 		msg_type = event.data[0]
-		msg = unicode(event.data[1], errors='replace')
-		if (msg_type==0):     #program information
-			self.program_information.SetLabel(msg)
-		elif (msg_type==1):   #station name
-			self.station_name.SetLabel(msg)
-		elif (msg_type==2):   #program type
-			self.program_type.SetLabel(msg)
-		elif (msg_type==3):   #flags
-			flags=msg
-			if (flags[0]=='1'):
-				self.tp_flag.SetForegroundColour(wx.RED)
-			else:
-				self.tp_flag.SetForegroundColour(wx.LIGHT_GREY)
-			if (flags[1]=='1'):
-				self.ta_flag.SetForegroundColour(wx.RED)
-			else:
-				self.ta_flag.SetForegroundColour(wx.LIGHT_GREY)
-			if (flags[2]=='1'):
-				self.musicspeech_flag.SetLabel("Music")
-				self.musicspeech_flag.SetForegroundColour(wx.RED)
-			else:
-				self.musicspeech_flag.SetLabel("Speech")
-				self.musicspeech_flag.SetForegroundColour(wx.RED)
-			if (flags[3]=='1'):
-				self.monostereo_flag.SetLabel("Mono")
-				self.monostereo_flag.SetForegroundColour(wx.RED)
-			else:
-				self.monostereo_flag.SetLabel("Stereo")
-				self.monostereo_flag.SetForegroundColour(wx.RED)
-			if (flags[4]=='1'):
-				self.artificialhead_flag.SetForegroundColour(wx.RED)
-			else:
-				self.artificialhead_flag.SetForegroundColour(wx.LIGHT_GREY)
-			if (flags[5]=='1'):
-				self.compressed_flag.SetForegroundColour(wx.RED)
-			else:
-				self.compressed_flag.SetForegroundColour(wx.LIGHT_GREY)
-			if (flags[6]=='1'):
-				self.staticpty_flag.SetForegroundColour(wx.RED)
-			else:
-				self.staticpty_flag.SetForegroundColour(wx.LIGHT_GREY)
-		elif (msg_type==4):   #radiotext
-			self.radiotext.SetLabel(msg)
-		elif (msg_type==5):   #clocktime
-			self.clocktime.SetLabel(msg)
-		elif (msg_type==6):   #alternative frequencies
-			self.alt_freq.SetLabel(msg)
-		elif (msg_type==7):   #update freq label
-			self.frequency.SetLabel(msg)
-			self.clear_data()
+		msg = event.data
+
+		if msg_type == EVENT_CALIBRATED:
+			self.calibrated.SetLabel("calibrated")
+			self.calibrated.SetForegroundColour('#005000')
+		elif msg_type == EVENT_CONFIG:
+			self.frame_num.SetLabel(str(msg[1]))
+			self.node_id.SetLabel(msg[2])
+		elif msg_type == EVENT_MEASSURE:
+			self.x.append(msg[1])
+			self.temp.append(msg[2])
+			self.hum.append(msg[3])
+			self.pres.append(msg[4])
+			self.plot.set_xdata(self.x)
+			self.plot.set_ydata(self.hum)
+			self.a.set_xlim([min(self.x), max(self.x)])
+			self.a.set_ylim([min(self.hum)*.95, max(self.hum)*1.05])
+			self.canvas.draw()
+
 
 		self.Layout()
 
 	def clear_data(self):
 		self.program_information.SetLabel("xxxx")
-		self.station_name.SetLabel("xxxxxxxx")
-		self.program_type.SetLabel("xxxxxxxxxxx")
-		self.ta_flag.SetForegroundColour(wx.BLACK)
-		self.tp_flag.SetForegroundColour(wx.BLACK)
-		self.musicspeech_flag.SetLabel("MUS/SPE")
-		self.musicspeech_flag.SetForegroundColour(wx.BLACK)
-		self.monostereo_flag.SetLabel("MN/ST")
-		self.monostereo_flag.SetForegroundColour(wx.BLACK)
-		self.artificialhead_flag.SetForegroundColour(wx.BLACK)
-		self.compressed_flag.SetForegroundColour(wx.BLACK)
-		self.staticpty_flag.SetForegroundColour(wx.BLACK)
-		self.radiotext.SetLabel("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-		self.clocktime.SetLabel("xxxxxxxxxxxx")
-		self.alt_freq.SetLabel("xxxxxxxxxxxxxxxxx")
+		self.frame_num.SetLabel("xxxxxxxx")
+		self.node_id.SetLabel("xxxxxxxxxxx")
 
