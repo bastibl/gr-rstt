@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.use('WXAgg')
 from matplotlib.figure import Figure
 import matplotlib.cm as cm
-from matplotlib.backends.backend_wxagg import Toolbar, FigureCanvasWxAgg
+from matplotlib.backends.backend_wxagg import NavigationToolbar2Wx, Toolbar, FigureCanvasWxAgg
 
 from gnuradio import gr, blocks
 
@@ -119,12 +119,12 @@ class rsttWxPanel(wx.Panel):
 
 		self.fig = Figure((5,4), 75)
 		self.canvas = FigureCanvasWxAgg(self, -1, self.fig)
-		self.toolbar = Toolbar(self.canvas)
-		self.toolbar.Realize()
+		self.toolbar = NavigationToolbar2Wx(self.canvas)
 
 		self.__set_properties()
 		self.__do_layout()
 		self.__init_plot()
+		self.toolbar.Realize()
 		EVT_DATA_EVENT (self, self.display_data)
 
 	def __set_properties(self):
