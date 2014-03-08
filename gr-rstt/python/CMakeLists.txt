@@ -31,6 +31,12 @@ endif()
 GR_PYTHON_INSTALL(
     FILES
     __init__.py
+    calibration.py
+    conv_tools.py
+    frame.py
+    #print_row.py
+    subframe.py
+    rstt_panel.py
     DESTINATION ${GR_PYTHON_DIR}/rstt
 )
 
