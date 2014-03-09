@@ -1,38 +1,3 @@
 *.py[cod]
 
-# C extensions
-*.so
-*.o
-
-# Packages
-*.egg
-*.egg-info
-dist
-build
-eggs
-parts
-var
-sdist
-develop-eggs
-.installed.cfg
-CMakeCache.txt
-CMakeFiles
-
-# Installer logs
-pip-log.txt
-
-# Unit test / coverage reports
-.coverage
-.tox
-nosetests.xml
-
-# Translations
-*.mo
-
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
-
-rstt_server/record_frames_autotune.py
-
+build/*
