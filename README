@@ -4,6 +4,9 @@ RSTT - RadioSonde Telemetry Tool
 Recieve and decode telemetry from Vaisala meteorological radiosondes
 (namely RS92-SGP/RS92-SGPD).
 
+Further Information
+http://brmlab.cz/project/weathersonde/start
+
 See individual files for license, where no explicit license is specified
 see LILCENSE.txt for details.
 
