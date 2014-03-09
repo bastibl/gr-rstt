@@ -1,10 +1,4 @@
-Currently installation is tested only for Linux,
-but should work for anny platform supported by GNURadio.
-
-RSTT Consists of 3 parts:
- * gr-rstt: GNU Radio Companion processing blocks
- * rstt_server: Flow graphs for receiving telemetry
- * rstt_cli: Process received telemetry data, vissualisation etc.
+Currently installation is tested only for Linux.
 
 == Installing gr-rstt ==
 
@@ -12,6 +6,8 @@ Requirements:
  * Gnuradio
  * gr-osmosdr
  * cmake
+ * matplotlib
+ * Python WX
  * C++ compiler and usual developers stuff ...
 
 Install:
@@ -42,12 +38,3 @@ aditional steps You might want to do:
  * update LD path configuration
    ldconfig
 
-== Install rstt_server ==
-  TODO
-  For now no installation is supported, run from local directory.
-  Recieved data can be stored in file and postprocessed by rstt_cli
-  or can be send trought UDP into running rstt_cli client.
-
-== Install rstt_cli ==
-  TODO
-  For now no installation is supported, run from local directory.
