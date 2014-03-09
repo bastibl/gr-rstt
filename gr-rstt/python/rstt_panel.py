@@ -112,6 +112,8 @@ class rsttWxPanel(wx.Panel):
 		self.label_1 = wx.StaticText(self, -1, "State")
 		self.label_2 = wx.StaticText(self, -1, "Frame Nr")
 		self.label_3 = wx.StaticText(self, -1, "Node ID")
+		self.axes    = wx.CheckBox(self, -1, "auto Axes")
+		self.axes.SetValue(1)
 
 		self.calibrated = wx.StaticText(self, -1, "not calibrated")
 		self.frame_num = wx.StaticText(self, -1, "xxxxxxxx")
@@ -153,6 +155,7 @@ class rsttWxPanel(wx.Panel):
 		sizer_0.Add(sizer_1, 1, wx.ALIGN_CENTER)
 		sizer_0.Add(self.canvas, 0, wx.ALIGN_CENTER | wx.GROW)
 		sizer_0.Add(self.toolbar, 0, wx.ALIGN_CENTER)
+		sizer_0.Add(self.axes, 0, wx.ALIGN_CENTER)
 
 		self.SetSizer(sizer_0)
 
@@ -163,7 +166,8 @@ class rsttWxPanel(wx.Panel):
 		self.temp = []
 		self.hum = []
 		self.pres = []
-		self.plot, = self.a.plot(self.x, self.temp, linewidth=2)
+		self.plots = [self.a.plot([],[], linewidth=2)[0] for x in range(3)]
+		self.a.legend(('temp', 'humidity', 'pressure'), loc=2)
 
 	def GetToolBar(self):
 		return self.toolbar
@@ -183,10 +187,17 @@ class rsttWxPanel(wx.Panel):
 			self.temp.append(msg[2])
 			self.hum.append(msg[3])
 			self.pres.append(msg[4])
-			self.plot.set_xdata(self.x)
-			self.plot.set_ydata(self.hum)
-			self.a.set_xlim([min(self.x), max(self.x)])
-			self.a.set_ylim([min(self.hum)*.95, max(self.hum)*1.05])
+
+			for i in range(3):
+				self.plots[i].set_xdata(self.x)
+			self.plots[0].set_ydata(self.temp)
+			self.plots[1].set_ydata(self.hum)
+			self.plots[2].set_ydata(self.pres)
+
+			if self.axes.IsChecked():
+				allData = self.hum + self.pres + self.temp
+				self.a.set_xlim([min(self.x) - 1, max(self.x)])
+				self.a.set_ylim([min(allData)*.95, max(allData)*1.05])
 			self.canvas.draw()
 
 
