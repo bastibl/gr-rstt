@@ -7,7 +7,7 @@
 <block>
 	<name>RSTT Panel</name>
 	<key>gr_rstt_panel</key>
-	<category>RSTT</category>
+	<category>[RSTT]</category>
 	<import>import rstt</import>
 	<make>#set $parent = $notebook() and 'self.%s.GetPage(%s)'%$notebook() or 'self'
 rstt.rsttPanel($(parent).GetWin())
