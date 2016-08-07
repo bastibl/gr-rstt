@@ -1,3 +1,4 @@
 *.py[cod]
+apps/rstt_rx.py
 
 build/*
