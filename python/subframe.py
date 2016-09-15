@@ -103,7 +103,7 @@ class SubframePadding(Subframe):
 
     def __init__(self, sf_type, sf_bytes, sf_status, _dbg):
         Subframe.__init__(self, sf_type, sf_bytes, sf_status, _dbg)
-        if sf_bytes != b'\x02\x00\x02\x00':
+        if bytes(sf_bytes) != b'\x02\x00\x02\x00':
             _dbg("Unexpected padding: %s" % sf_bytes)
 
 
@@ -203,6 +203,6 @@ class SubframeWTF1(Subframe):
 
     def __init__(self, sf_type, sf_bytes, sf_status, _dbg):
         Subframe.__init__(self, sf_type, sf_bytes, sf_status, _dbg)
-        if sf_bytes != b'\x03\x03\x00\x00\x00\x00\x00\x00\x00\x00':
+        if bytes(sf_bytes) != b'\x03\x03\x00\x00\x00\x00\x00\x00\x00\x00':
             _dbg("Unexpected contend in subframe 0x%x %s" % (sf_type, sf_bytes, ))
 
