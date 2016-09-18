@@ -37,4 +37,6 @@ Start flow graphs in the *apps* folder.
 ## Demos
 
 Quick example:
-https://www.youtube.com/watch?v=hnv0efcShfo
+https://www.youtube.com/watch?v=B_IbqoJjNLw
+
+[![gr-rstt demo](http://img.youtube.com/vi/B_IbqoJjNLw/0.jpg)](http://www.youtube.com/watch?v=B_IbqoJjNLw "gr-rstt demo")
