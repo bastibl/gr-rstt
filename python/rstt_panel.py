@@ -72,12 +72,14 @@ class rsttPanel(gr.sync_block, QtWidgets.QWidget):
 
 		label_nr = Qt.QLabel("Frame Nr")
 		self.frame_num = Qt.QLabel("xxx")
+                self.frame_num.setStyleSheet("font-weight: bold")
 
 		label_node = Qt.QLabel("Node ID")
 		self.node_id = Qt.QLabel("xxxxxxxx")
+                self.node_id.setStyleSheet("font-weight: bold")
 
 		self.calibrated_label = Qt.QLabel("not calibrated")
-		self.calibrated_label.setStyleSheet("color: red")
+                self.calibrated_label.setStyleSheet("font-weight:bold; color: red")
 
 		plotWidget = QtWidgets.QWidget(self)
 		self.plot = RsttCanvas(plotWidget, width=5, height=4, dpi=100)
