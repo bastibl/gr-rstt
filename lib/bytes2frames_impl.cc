@@ -62,7 +62,7 @@ namespace gr {
         // first and last '*' is required, to guess frame start mark
         // up to 3 error are tollerable (and 0x10 is missing)
         if (nerr <= 2) {
-            if (in[0] & _MASK == '*' && in[4] & _MASK == '*') {
+            if ((in[0] & _MASK) == '*' && (in[4] & _MASK) == '*') {
                 return nerr + 1;
             }
         }
