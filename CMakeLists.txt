@@ -83,19 +83,22 @@ set(GRC_BLOCKS_DIR      ${GR_PKG_DATA_DIR}/grc/blocks)
 ########################################################################
 # Find gnuradio build dependencies
 ########################################################################
-find_package(CppUnit)
 
-# Search for GNU Radio and its components and versions. Add any
-# components required to the list of GR_REQUIRED_COMPONENTS (in all
-# caps such as FILTER or FFT) and change the version to the minimum
-# API compatible version required.
 set(GR_REQUIRED_COMPONENTS RUNTIME FEC)
 find_package(Gnuradio)
-
-if(NOT CPPUNIT_FOUND)
-    message(FATAL_ERROR "CppUnit required to compile rstt")
+if(NOT GNURADIO_RUNTIME_FOUND)
+    message(FATAL_ERROR "GNU Radio required to compile gr-rstt")
 endif()
 
+find_package(CppUnit)
+if(NOT CPPUNIT_FOUND)
+    message(FATAL_ERROR "CppUnit required to compile gr-rstt")
+endif()
+
+find_package(SWIG)
+if(NOT SWIG_FOUND)
+    message(FATAL_ERROR "SWIG required to compile gr-rstt")
+endif()
 ########################################################################
 # On Apple only, set install name and use rpath correctly, if not already set
 ########################################################################
