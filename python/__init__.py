@@ -22,6 +22,15 @@
 This is the GNU Radio RSTT module. Place your Python package
 description here (python/__init__.py).
 '''
+from __future__ import unicode_literals
 
-from rstt_swig import *
-from rstt_panel import *
+# import swig generated symbols into the rstt namespace
+try:
+    # this might fail if the module is python-only
+    from .rstt_swig import *
+except ImportError:
+    pass
+
+# import any pure python here
+from .rstt_panel import *
+#

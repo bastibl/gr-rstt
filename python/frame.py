@@ -1,4 +1,4 @@
-from subframe import Subframe, SubframeError
+from .subframe import Subframe, SubframeError
 import numpy as np
 
 

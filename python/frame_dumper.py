@@ -2,11 +2,11 @@
 
 import source
 
-from calibration import CalibrationCollector, Calibration
-from frame import Frame
+from .calibration import CalibrationCollector, Calibration
+from .frame import Frame
 from math import isfinite
 from struct import unpack
-from subframe import SF_TYPE_CONFIG, SF_TYPE_MEASUREMENTS, SF_TYPE_GPS, SF_TYPE_PADDING, SF_TYPE_WTF1
+from .subframe import SF_TYPE_CONFIG, SF_TYPE_MEASUREMENTS, SF_TYPE_GPS, SF_TYPE_PADDING, SF_TYPE_WTF1
 from sys import argv
 
 class Client:

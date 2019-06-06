@@ -1,6 +1,6 @@
 # Copyright 2011 Free Software Foundation, Inc.
 #
-# This file is part of GNU Radio
+# This file is part of gr-rstt
 #
 # GNU Radio is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,8 +36,7 @@ GR_PYTHON_INSTALL(
     frame.py
     #print_row.py
     subframe.py
-    rstt_panel.py
-    DESTINATION ${GR_PYTHON_DIR}/rstt
+    rstt_panel.py DESTINATION ${GR_PYTHON_DIR}/rstt
 )
 
 ########################################################################

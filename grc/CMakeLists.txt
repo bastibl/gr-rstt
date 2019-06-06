@@ -1,6 +1,6 @@
 # Copyright 2011 Free Software Foundation, Inc.
 #
-# This file is part of GNU Radio
+# This file is part of gr-rstt
 #
 # GNU Radio is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,9 +17,8 @@
 # the Free Software Foundation, Inc., 51 Franklin Street,
 # Boston, MA 02110-1301, USA.
 
-file(GLOB xml_files "*.xml")
-
 install(FILES
-    ${xml_files}
-    DESTINATION share/gnuradio/grc/blocks
+    rstt_clip.block.yml
+    rstt_decoder.block.yml
+    rstt_panel.block.yml DESTINATION share/gnuradio/grc/blocks
 )

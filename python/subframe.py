@@ -1,6 +1,6 @@
 import crcmod
 from struct import unpack
-from conv_tools import conv_fract, conv_int
+from .conv_tools import conv_fract, conv_int
 
 
 SF_TYPE_CONFIG = 0x65
@@ -11,7 +11,7 @@ SF_TYPE_WTF1 = 0x68
 
 
 def parse_string(a):
-    return ''.join([chr(x) for x in a.tolist()])
+    return bytes(''.join([chr(x) for x in a.tolist()]), 'utf-8')
 
 
 class SubframeError(ValueError):
@@ -180,7 +180,7 @@ class SubframeMeas(Subframe):
     def __init__(self, sf_type, sf_bytes, sf_status, _dbg):
         Subframe.__init__(self, sf_type, sf_bytes, sf_status, _dbg)
         self.ch1 = self.temp = conv_int(self.sf_bytes[0:3])
-        print self.sf_bytes[0:3]
+        print(self.sf_bytes[0:3])
         self.ch2 = self.hum_up = conv_int(self.sf_bytes[3:6])
         self.ch3 = self.hum_down = conv_int(self.sf_bytes[6:9])
         self.ch4 = conv_int(self.sf_bytes[9:12])
